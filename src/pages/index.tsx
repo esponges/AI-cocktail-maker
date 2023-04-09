@@ -1,12 +1,43 @@
+/* eslint-disable max-len */
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
+import { useState } from "react";
+
+// a list of spirits drinks brand names
+const spirits = [
+  "Absolut Blue",
+  "Baileys",
+  "Don Julio Blanco",
+  "Glenfiddich",
+  "Grey Goose",
+  "Jack Daniel's",
+  "Johnnie Walker Black Label",
+  "Beefeater",
+  "Bombay Sapphire",
+  "Captain Morgan",
+];
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
+  const [chosenSpirit, setChosenSpirit] = useState<string | undefined>(
+    undefined
+  );
+  const { data, mutateAsync } = api.drinks.create.useMutation();
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setChosenSpirit(e.target.value);
+  };
+
+  const handleCreateClick = async (
+    _e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    if (chosenSpirit) {
+      await mutateAsync({ brand: chosenSpirit });
+    }
+  };
 
   return (
     <>
@@ -17,39 +48,46 @@ const Home: NextPage = () => {
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
+          {/* a dropdown with all the available spirits */}
+          <div className="relative">
+            <select
+              onChange={handleChange}
+              className="h-12 w-full appearance-none rounded-lg border border-white/10 bg-white/10 pl-4 pr-8 text-base text-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-white/20"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
+              {spirits.map((spirit) => (
+                <option key={spirit}>{spirit}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+              <svg
+                className="h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello.data ? hello.data.greeting : "Loading tRPC query..."}
-            </p>
-            <AuthShowcase />
-          </div>
+          {/* form to submit the chosen spirit */}
+          <button
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            onClick={handleCreateClick}
+            className="rounded-md border border-white/10 bg-white/10 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-white/10"
+          >
+            Create Drink
+          </button>
+          {/* create drink result */}
+          {data?.recipe && (
+            <div className="flex flex-col items-center justify-center gap-4">
+              <p className="text-2xl font-bold text-white">{data?.recipe}</p>
+            </div>
+          )}
         </div>
       </main>
     </>
@@ -57,27 +95,3 @@ const Home: NextPage = () => {
 };
 
 export default Home;
-
-const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
-
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined },
-  );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl text-white">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
-};
