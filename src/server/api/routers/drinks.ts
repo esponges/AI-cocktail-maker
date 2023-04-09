@@ -26,12 +26,9 @@ export const drinksRouter = createTRPCRouter({
       const requestObject: CreateCompletionRequest = {
         prompt: `I want a ${input.brand} cocktail recipe`,
         // model gpt 3.5
-        model: "gpt-3.5-turbo",
+        model: "text-davinci-003",
         max_tokens: 100,
-        temperature: 0.9,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
+        temperature: 0.5,
       };
 
       try {
