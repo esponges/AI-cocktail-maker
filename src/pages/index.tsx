@@ -85,7 +85,9 @@ const Home: NextPage = () => {
           {/* create drink result */}
           {data?.recipe && (
             <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-2xl font-bold text-white">{data?.recipe}</p>
+              <pre className="text-2xl font-bold text-white">
+                {data?.recipe}
+              </pre>
             </div>
           )}
         </div>
