@@ -1,12 +1,13 @@
 /* eslint-disable max-len */
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { useState } from "react";
-import { ChatCompletionRequestMessageRoleEnum } from "openai";
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  type ChatCompletionRequestMessage
+} from "openai";
 
 // a list of spirits drinks brand names
 const spirits = [
@@ -22,14 +23,17 @@ const spirits = [
   "Captain Morgan",
 ];
 
+const systemInitialMessage: ChatCompletionRequestMessage[] = [
+  {
+    role: ChatCompletionRequestMessageRoleEnum.System,
+    content: "You are a cocktail maker that can create drinks from a list of spirits brands",
+  },
+];
+
 const Home: NextPage = () => {
-  const [messages, setMessages] = useState([
-    {
-      role: ChatCompletionRequestMessageRoleEnum.System,
-      content:
-        "You are a cocktail maker that can create drinks from a list of spirits brands",
-    },
-  ]);
+  
+  const [messages, setMessages] = useState<Array<ChatCompletionRequestMessage>>(systemInitialMessage);
+  
   const [chosenSpirit, setChosenSpirit] = useState<string | undefined>(
     undefined
   );
@@ -43,25 +47,30 @@ const Home: NextPage = () => {
     _e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     if (chosenSpirit) {
+      const nextContent = {
+        role: ChatCompletionRequestMessageRoleEnum.User,
+        content: `I want a ${chosenSpirit} cocktail recipe`,
+      };
+
       const res = await mutateAsync({
         brand: chosenSpirit,
-        messages: [
-          ...messages,
-          { role: "user", content: `I want a ${chosenSpirit} cocktail recipe` },
-        ],
+        messages: [...messages, nextContent],
       });
 
-      // if (!!res.message && res.message !== "Error") {
-      //   setMessages((prev) => [
-      //     ...prev,
-      //     {
-      //       role: ChatCompletionRequestMessageRoleEnum.System,
-      //       content: res.message,
-      //     },
-      //   ]);
-      // }
+      if (!!res.message && res.message !== "Error") {
+        setMessages((prev) => [
+          ...prev,
+          nextContent,
+          {
+            role: ChatCompletionRequestMessageRoleEnum.System,
+            content: res.message as string,
+          },
+        ]);
+      }
     }
   };
+
+  console.log(messages);
 
   return (
     <>
