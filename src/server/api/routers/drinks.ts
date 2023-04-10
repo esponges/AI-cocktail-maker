@@ -50,12 +50,10 @@ export const drinksRouter = createTRPCRouter({
 
       try {
         const recipe = await openAI.createChatCompletion(requestObject);
-        console.log(recipe.data.choices[0]?.message);
         return {
           message: recipe.data.choices[0]?.message?.content,
         };
       } catch (error) {
-        console.log(error);
         return {
           message: "Error",
         };

@@ -38,7 +38,7 @@ const Home: NextPage = () => {
     undefined
   );
 
-  const { data, mutateAsync, isLoading } = api.drinks.create.useMutation();
+  const { mutateAsync, isLoading } = api.drinks.create.useMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setChosenSpirit(e.target.value);
