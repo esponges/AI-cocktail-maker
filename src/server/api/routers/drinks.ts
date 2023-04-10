@@ -45,7 +45,7 @@ export const drinksRouter = createTRPCRouter({
         messages: input.messages,
         // model gpt 3.5
         model: "gpt-3.5-turbo",
-        // temperature: 0.5,
+        temperature: 0.5,
       };
 
       try {
