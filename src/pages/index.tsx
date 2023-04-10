@@ -45,7 +45,10 @@ const Home: NextPage = () => {
     if (chosenSpirit) {
       const res = await mutateAsync({
         brand: chosenSpirit,
-        messages: [...messages, { role: "user", content: `I want a ${chosenSpirit} cocktail recipe` }],
+        messages: [
+          ...messages,
+          { role: "user", content: `I want a ${chosenSpirit} cocktail recipe` },
+        ],
       });
 
       // if (!!res.message && res.message !== "Error") {
@@ -105,10 +108,13 @@ const Home: NextPage = () => {
           </button>
           {/* create drink result */}
           {data?.message && (
-            <div className="flex flex-col items-center justify-center gap-4 overflow-x-auto">
-              <pre className="text-2xl font-bold text-white" style={{ wordBreak: 'break-word' }}>
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div
+                className="text-2xl font-bold text-white"
+                style={{ whiteSpace: "pre-wrap" }}
+              >
                 {data.message}
-              </pre>
+              </div>
             </div>
           )}
         </div>
