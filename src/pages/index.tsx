@@ -6,7 +6,7 @@ import { api } from "~/utils/api";
 import { useState } from "react";
 import {
   ChatCompletionRequestMessageRoleEnum,
-  type ChatCompletionRequestMessage
+  type ChatCompletionRequestMessage,
 } from "openai";
 
 // a list of spirits drinks brand names
@@ -26,18 +26,19 @@ const spirits = [
 const systemInitialMessage: ChatCompletionRequestMessage[] = [
   {
     role: ChatCompletionRequestMessageRoleEnum.System,
-    content: "You are a cocktail maker that can create drinks from a list of spirits brands",
+    content:
+      "You are a cocktail maker that can create drinks from a list of spirits brands",
   },
 ];
 
 const Home: NextPage = () => {
-  
-  const [messages, setMessages] = useState<Array<ChatCompletionRequestMessage>>(systemInitialMessage);
-  
+  const [messages, setMessages] =
+    useState<Array<ChatCompletionRequestMessage>>(systemInitialMessage);
   const [chosenSpirit, setChosenSpirit] = useState<string | undefined>(
     undefined
   );
-  const { data, mutateAsync } = api.drinks.create.useMutation();
+
+  const { data, mutateAsync, isLoading } = api.drinks.create.useMutation();
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setChosenSpirit(e.target.value);
@@ -62,7 +63,7 @@ const Home: NextPage = () => {
           ...prev,
           nextContent,
           {
-            role: ChatCompletionRequestMessageRoleEnum.System,
+            role: ChatCompletionRequestMessageRoleEnum.Assistant,
             content: res.message as string,
           },
         ]);
@@ -70,7 +71,12 @@ const Home: NextPage = () => {
     }
   };
 
-  console.log(messages);
+  const assistantResponses = messages
+    .filter(
+      (message) =>
+        message.role === ChatCompletionRequestMessageRoleEnum.Assistant
+    )
+    .reverse();
 
   return (
     <>
@@ -116,16 +122,23 @@ const Home: NextPage = () => {
             Create Drink
           </button>
           {/* create drink result */}
-          {data?.message && (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div
-                className="text-2xl font-bold text-white"
-                style={{ whiteSpace: "pre-wrap" }}
-              >
-                {data.message}
-              </div>
-            </div>
+          {isLoading && (
+            <div className="text-2xl font-bold text-white">Loading...</div>
           )}
+          {assistantResponses.length > 0 &&
+            assistantResponses.map((message, index) => (
+              <div
+                key={`${message.content}-${index}`}
+                className="flex flex-col items-center justify-center gap-4"
+              >
+                <div
+                  className="text-2xl font-bold text-white"
+                  style={{ whiteSpace: "pre-wrap" }}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
         </div>
       </main>
     </>
