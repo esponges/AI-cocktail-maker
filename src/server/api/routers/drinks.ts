@@ -3,13 +3,17 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
-  protectedProcedure,
 } from "~/server/api/trpc";
 
 import { env } from "~/env.mjs";
 
-import type { CreateCompletionRequest} from "openai";
-import { Configuration, OpenAIApi } from "openai";
+import type {
+} from "openai";
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  OpenAIApi,
+} from "openai";
 
 const openAIConfig = new Configuration({
   organization: env.OPENAI_ORG_ID,
@@ -20,27 +24,40 @@ const openAI = new OpenAIApi(openAIConfig);
 
 export const drinksRouter = createTRPCRouter({
   create: publicProcedure
-    .input(z.object({ brand: z.string() }))
+    .input(
+      z.object({
+        brand: z.string(),
+        messages: z.array(
+          z.object({
+            role: z.enum([
+              ChatCompletionRequestMessageRoleEnum.User,
+              ChatCompletionRequestMessageRoleEnum.System,
+              ChatCompletionRequestMessageRoleEnum.Assistant,
+            ]),
+            content: z.string(), // add this line to include the 'content' property
+          })
+        ),
+      })
+    )
     .mutation(async ({ input }) => {
       // TODO: make the call to the OpenAI API
-      const requestObject: CreateCompletionRequest = {
-        prompt: `I want a ${input.brand} cocktail recipe`,
+      const requestObject = {
+        messages: input.messages,
         // model gpt 3.5
-        model: "text-davinci-003",
-        max_tokens: 100,
-        temperature: 0.5,
+        model: "gpt-3.5-turbo",
+        // temperature: 0.5,
       };
 
       try {
-        const recipe = await openAI.createCompletion(requestObject);
-        console.log('recipe', recipe.data?.choices[0]?.text);
+        const recipe = await openAI.createChatCompletion(requestObject);
+        console.log(recipe.data.choices[0]?.message);
         return {
-          recipe: recipe.data?.choices[0]?.text,
+          message: recipe.data.choices[0]?.message?.content,
         };
       } catch (error) {
         console.log(error);
         return {
-          recipe: "Sorry, I don't know that brand.",
+          message: "Error",
         };
       }
     }),

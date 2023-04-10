@@ -6,6 +6,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 
 import { api } from "~/utils/api";
 import { useState } from "react";
+import { ChatCompletionRequestMessageRoleEnum } from "openai";
 
 // a list of spirits drinks brand names
 const spirits = [
@@ -22,6 +23,13 @@ const spirits = [
 ];
 
 const Home: NextPage = () => {
+  const [messages, setMessages] = useState([
+    {
+      role: ChatCompletionRequestMessageRoleEnum.System,
+      content:
+        "You are a cocktail maker that can create drinks from a list of spirits brands",
+    },
+  ]);
   const [chosenSpirit, setChosenSpirit] = useState<string | undefined>(
     undefined
   );
@@ -35,7 +43,20 @@ const Home: NextPage = () => {
     _e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     if (chosenSpirit) {
-      await mutateAsync({ brand: chosenSpirit });
+      const res = await mutateAsync({
+        brand: chosenSpirit,
+        messages: [...messages, { role: "user", content: `I want a ${chosenSpirit} cocktail recipe` }],
+      });
+
+      // if (!!res.message && res.message !== "Error") {
+      //   setMessages((prev) => [
+      //     ...prev,
+      //     {
+      //       role: ChatCompletionRequestMessageRoleEnum.System,
+      //       content: res.message,
+      //     },
+      //   ]);
+      // }
     }
   };
 
@@ -83,10 +104,10 @@ const Home: NextPage = () => {
             Create Drink
           </button>
           {/* create drink result */}
-          {data?.recipe && (
-            <div className="flex flex-col items-center justify-center gap-4">
-              <pre className="text-2xl font-bold text-white">
-                {data?.recipe}
+          {data?.message && (
+            <div className="flex flex-col items-center justify-center gap-4 overflow-x-auto">
+              <pre className="text-2xl font-bold text-white" style={{ wordBreak: 'break-word' }}>
+                {data.message}
               </pre>
             </div>
           )}
