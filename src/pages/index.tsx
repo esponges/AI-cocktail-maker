@@ -92,7 +92,7 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+        <div className="container flex flex-col items-center md:w-1/3 justify-center gap-12 px-4 py-16 ">
           {/* a dropdown with all the available spirits */}
           <div className="relative">
             <select
@@ -131,20 +131,22 @@ const Home: NextPage = () => {
           {isLoading && (
             <div className="text-2xl font-bold text-white">Loading...</div>
           )}
-          {assistantResponses.length > 0 &&
-            assistantResponses.map((message, index) => (
-              <div
-                key={`${message.content}-${index}`}
-                className="flex flex-col items-center justify-center gap-4"
-              >
+          <div>
+            {assistantResponses.length > 0 &&
+              assistantResponses.map((message, index) => (
                 <div
-                  className="text-2xl font-bold text-white"
-                  style={{ whiteSpace: "pre-wrap" }}
+                  key={`${message.content}-${index}`}
+                  className="flex flex-col text-left justify-start gap-4 my-12 border-l-4 border-white/10 pl-4"
                 >
-                  {message.content}
+                  <div
+                    className="text-2xl font-bold text-white"
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    {message.content}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
       </main>
     </>
