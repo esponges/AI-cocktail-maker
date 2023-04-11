@@ -27,7 +27,7 @@ const systemInitialMessage: ChatCompletionRequestMessage[] = [
   {
     role: ChatCompletionRequestMessageRoleEnum.System,
     content:
-      "You are a cocktail maker that can create drinks from a list of spirits brands",
+      "You are a cocktail maker that can create drinks from a list of spirits brands.",
   },
 ];
 
@@ -48,9 +48,15 @@ const Home: NextPage = () => {
     _e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     if (chosenSpirit) {
+      const isFirstUserPrompt = messages.length === systemInitialMessage.length;
+
       const nextContent = {
         role: ChatCompletionRequestMessageRoleEnum.User,
-        content: `I want a ${chosenSpirit} cocktail recipe`,
+        content: `I want a ${chosenSpirit} cocktail recipe. ${
+          isFirstUserPrompt
+            ? "Please answer with naming the brand and the recipe only."
+            : ""
+        }`,
       };
 
       const res = await mutateAsync({
